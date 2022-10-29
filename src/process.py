@@ -44,7 +44,7 @@ def eval(opt, global_model, num_states, num_actions):
         #     torch.save(local_model.state_dict(),
         #                "{}/ppo_super_mario_bros_{}_{}_{}".format(opt.saved_path, opt.world, opt.stage, curr_step))
 
-        env.render()
+        #env.render()
         actions.append(action)
         if curr_step > opt.num_global_steps or actions.count(actions[0]) == actions.maxlen:
             done = True
