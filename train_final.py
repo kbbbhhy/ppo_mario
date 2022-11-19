@@ -1,3 +1,4 @@
+#the change vision for PPO_MARIO:wq
 """
 @author: Viet Nguyen <nhviet1009@gmail.com>
 """
@@ -211,25 +212,17 @@ def train(opt):
             delta=good_rewards[:,t]+gamma*good_values[:,t+1]*good_episode_dones[:,t]-good_values[:,t]
             gae_step=delta+gamma*tau*good_episode_dones[:,t]*gae_step
             advantages[:,t]=gae_step
-        #print(f"The advantage is {advantages} and the length is {len(advantages[0])}")
-        #print(f"The values is {good_values} and the length is {len(good_values[0])}")
         good_reshape_reward=advantages+good_values
         train_data=[good_states,advantages,good_reshape_reward,good_values,good_actions,good_prob]
         train_data=[torch.tensor(x).to(device='cuda',dtype=torch.float) for x in train_data]
-        #print(f"The reshape reward is {good_reshape_reward}")
-        #print(f"The train_data is {train_data}")
         train_data=[x.reshape((-1,)+x.shape[2:]) for x in train_data]
         #print(f"The flatten train data{train_data}")
         states,advantages,rewards,values,actions,probs=train_data
-        #return
         epochs=opt.num_epochs
         for _ in range(epochs):
             indice=torch.randperm(N*T)
             for j in range(batches):
                 batch_indices=indice[int(j*N*T/batches):int((j+1)*N*T/batches)]
-                #print(f"the states {states[batch_indices]}")
-                #print(f"the model {model}")
-                #return
                 logits,value=model(states[batch_indices])
                 new_policy=F.softmax(logits,dim=1)
                 new_m=Categorical(new_policy)
@@ -244,49 +237,14 @@ def train(opt):
                 total_loss.backward()
                 torch.nn.utils.clip_grad_norm_(model.parameters(),0.5)
                 optimizer.step()
-                #batch_data=[x[start:end] for x in train_data]
-                #batch_data=[x.reshape((-1,)+x.shape[2:])for x in batch_data]
-                #print(f"now batch{batch_data}")
         print(f"The episode is {curr_episode}")
-        #return
-        #for value, reward, done in list(zip(values, rewards, dones))[::-1]:
-        #    gae = gae * opt.gamma * opt.tau
-        #    gae = gae + reward + opt.gamma * next_value.detach() * (1 - done) - value.detach()
-        #    next_value = value
-        #    R.append(gae + value)
-        #R = R[::-1]
-        #R = torch.cat(R).detach()
-        #advantages = R - values
-        #for i in range(opt.num_epochs):
-        #    indice = torch.randperm(opt.num_local_steps * opt.num_processes)
-        #    for j in range(opt.batch_size):
-        #        batch_indices = indice[
-        #                        int(j * (opt.num_local_steps * opt.num_processes / opt.batch_size)): int((j + 1) * (
-        #                                opt.num_local_steps * opt.num_processes / opt.batch_size))]
-        #        logits, value = model(states[batch_indices])
-        #        new_policy = F.softmax(logits, dim=1)
-        #        new_m = Categorical(new_policy)
-        #        new_log_policy = new_m.log_prob(actions[batch_indices])
-        #        ratio = torch.exp(new_log_policy - old_log_policies[batch_indices])
-        #        actor_loss = -torch.mean(torch.min(ratio * advantages[batch_indices],
-        #                                           torch.clamp(ratio, 1.0 - opt.epsilon, 1.0 + opt.epsilon) *
-        #                                           advantages[
-        #                                               batch_indices]))
-        #        # critic_loss = torch.mean((R[batch_indices] - value) ** 2) / 2
-        #        critic_loss = F.smooth_l1_loss(R[batch_indices], value.squeeze())
-        #        entropy_loss = torch.mean(new_m.entropy())
-        #        total_loss = actor_loss + critic_loss - opt.beta * entropy_loss
-        #        optimizer.zero_grad()
-        #        total_loss.backward()
-        #        torch.nn.utils.clip_grad_norm_(model.parameters(), 0.5)
-        #        optimizer.step()
-        #print("Episode: {}. Total loss: {}".format(curr_episode, total_loss))
-        with open(opt.acc_path + '/' +'old_'+str(opt.world)+'_'+ str(opt.stage) + '.txt', 'a') as f:
+        with open(opt.acc_path + '/' +'final_'+str(opt.world)+'_'+ str(opt.stage) + '.txt', 'a') as f:
             f.write(str(curr_episode)+' '+str(acc)+'\n')
         print(acc)
-        if curr_episode>2000:
+        if curr_episode>4000:
             return
 
 if __name__ == "__main__":
     opt = get_args()
     train(opt)
+
